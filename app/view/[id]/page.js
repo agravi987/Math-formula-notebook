@@ -59,6 +59,18 @@ export default function ViewFormulaPage() {
         <BlockMath math={formula.expression} />
       </div>
       <p className={styles.description}>{formula.description}</p>
+
+      <p className={styles.date}>
+        Created on:{" "}
+        {new Date(formula.createdAt).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })}
+      </p>
+      <div className={styles.author}>
+        {formula.userEmail && <>Contact Author: {formula.userEmail}</>}
+      </div>
     </div>
   );
 }

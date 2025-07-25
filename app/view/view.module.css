@@ -82,3 +82,9 @@
     padding: 0.4rem 0.9rem;
   }
 }
+
+.author {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}

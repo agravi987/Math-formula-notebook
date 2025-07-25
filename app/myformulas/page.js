@@ -1,6 +1,8 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
 import FormulaCard from "@/components/FormulaCard";
@@ -10,21 +12,36 @@ import Loader from "@/components/Loader";
 
 // Home page component - displays all formulas
 export default function HomePage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [formulas, setFormulas] = useState([]);
   const [filteredFormulas, setFilteredFormulas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Fetch formulas on component mount
+  // Redirect to login if not authenticated
   useEffect(() => {
-    fetchFormulas();
-  }, []);
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
 
-  // Fetch all formulas from new API
-  const fetchFormulas = async () => {
+  // Fetch formulas when component mounts
+  useEffect(() => {
+    if (session) {
+      fetchFormulas();
+    }
+  }, [session]);
+
+  // Fetch all formulas from API
+  const fetchFormulas = async (category = "", search = "") => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/allformulas");
+      const params = new URLSearchParams();
+      if (category && category !== "All") params.append("category", category);
+      if (search) params.append("search", search);
+
+      const response = await axios.get(`/api/formulas?${params}`);
       setFormulas(response.data.formulas);
       setFilteredFormulas(response.data.formulas);
       setError("");
@@ -38,28 +55,19 @@ export default function HomePage() {
 
   // Handle search
   const handleSearch = (searchTerm) => {
-    const filtered = formulas.filter(
-      (f) =>
-        f.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        f.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredFormulas(filtered);
+    fetchFormulas("", searchTerm);
   };
 
   // Handle category filter
   const handleCategoryFilter = (category) => {
-    if (category === "All") {
-      setFilteredFormulas(formulas);
-    } else {
-      const filtered = formulas.filter((f) => f.category === category);
-      setFilteredFormulas(filtered);
-    }
+    fetchFormulas(category, "");
   };
 
-  // Handle delete formula (optional: remove if only public view)
+  // Handle delete formula
   const handleDeleteFormula = async (formulaId) => {
     try {
       await axios.delete(`/api/formulas/${formulaId}`);
+      // Remove deleted formula from state
       setFormulas(formulas.filter((f) => f._id !== formulaId));
       setFilteredFormulas(filteredFormulas.filter((f) => f._id !== formulaId));
     } catch (error) {
@@ -68,8 +76,19 @@ export default function HomePage() {
     }
   };
 
+  // Show loading while checking authentication
+  if (status === "loading") {
+    return <Loader text="Loading..." />;
+  }
+
+  // Don't render if not authenticated
+  if (!session) {
+    return null;
+  }
+
   return (
     <>
+      {" "}
       <Header />
       <div className="page-container">
         <SearchFilter
@@ -80,7 +99,7 @@ export default function HomePage() {
         {error && <div className="error-text">{error}</div>}
 
         {loading ? (
-          <Loader text="Fetching formulas..." />
+          <Loader text="Fetching your formula..." />
         ) : filteredFormulas.length === 0 ? (
           <div className="empty-state">
             <h3>No formulas found</h3>

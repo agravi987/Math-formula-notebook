@@ -12,7 +12,7 @@ export default function Header() {
     <header className={styles.header}>
       <div className={styles.container}>
         <Link href="/" className={styles.logo}>
-          📐 Math Formula Notebook
+          📐 Math Formulae Notebook
         </Link>
 
         <nav className={styles.nav}>
@@ -24,7 +24,7 @@ export default function Header() {
               <Link href="/add" className={styles.navLink}>
                 Add Formula
               </Link>
-              <Link href="/myformula" className={styles.navLink}>
+              <Link href="/myformulas" className={styles.navLink}>
                 MyFormula
               </Link>
               <div className={styles.userInfo}>

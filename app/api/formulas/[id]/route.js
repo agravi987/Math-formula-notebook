@@ -3,21 +3,12 @@ import { getServerSession } from "next-auth";
 import connectMongoDB from "@/lib/mongodb";
 import Formula from "@/models/Formula";
 
-// GET - Get a single formula by ID
+// GET - Get a single formula by ID (public access)
 export async function GET(request, { params }) {
   try {
-    const session = await getServerSession();
-
-    if (!session) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
     await connectMongoDB();
 
-    const formula = await Formula.findOne({
-      _id: params.id,
-      userEmail: session.user.email,
-    });
+    const formula = await Formula.findById(params.id); // removed userEmail check
 
     if (!formula) {
       return NextResponse.json({ error: "Formula not found" }, { status: 404 });
