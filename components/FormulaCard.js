@@ -44,9 +44,9 @@ export default function FormulaCard({ formula, onDelete }) {
           <span>By: {formula.userName}</span>
           {formula.userEmail && (
             <span className={styles["formula-email"]}>
-              {session.user.email === formula.userEmail
+              {session?.user?.email === formula.userEmail
                 ? "You"
-                : session.user.name}
+                : session?.user?.name}
             </span>
           )}
         </div>
